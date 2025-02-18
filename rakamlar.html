@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kawaii Korece Rakam Oyunu</title>
+  <style>
+    body {
+      background: #FFFAF0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #FFF0F5;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #ff69b4;
+      font-size: 36px;
+    }
+    .question {
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .option {
+      background: #FFDAB9;
+      padding: 10px 20px;
+      border: 2px solid #FFB6C1;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 18px;
+    }
+    .option:hover {
+      transform: scale(1.05);
+    }
+    .feedback {
+      margin-top: 20px;
+      font-size: 20px;
+      height: 30px;
+    }
+    .next-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ffb6c1;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .next-button:hover {
+      background: #ff69b4;
+      color: #fff;
+    }
+    .score {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kawaii Korece Rakam Oyunu</h1>
+    <div id="game">
+      <div id="question-container">
+        <div class="question" id="question">Soru yükleniyor...</div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-button" id="next-button" style="display: none;">Sonraki</button>
+      <div class="score" id="score" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "Korece '일' hangi rakamdır?", options: ["1", "2", "3", "4"], answer: "1" },
+      { question: "Korece '삼' hangi rakamdır?", options: ["2", "3", "5", "7"], answer: "3" },
+      { question: "Korece '오' hangi rakamdır?", options: ["4", "5", "6", "8"], answer: "5" },
+      { question: "Korece '칠' hangi rakamdır?", options: ["6", "7", "8", "9"], answer: "7" },
+      { question: "Korece '구' hangi rakamdır?", options: ["8", "9", "10", "11"], answer: "9" },
+      { question: "Korece '십' hangi rakamdır?", options: ["10", "12", "14", "16"], answer: "10" },
+      { question: "Korece '백' hangi rakamdır?", options: ["10", "50", "100", "1000"], answer: "100" },
+      { question: "Korece '천' hangi rakamdır?", options: ["100", "500", "1000", "10000"], answer: "1000" },
+      { question: "Korece '만' hangi rakamdır?", options: ["1000", "5000", "10000", "50000"], answer: "10000" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const feedbackEl = document.getElementById('feedback');
+    const nextButton = document.getElementById('next-button');
+    const scoreEl = document.getElementById('score');
+
+    function loadQuestion() {
+      feedbackEl.textContent = "";
+      nextButton.style.display = "none";
+      optionsEl.innerHTML = "";
+
+      if (currentQuestionIndex < questions.length) {
+        const currentQuestion = questions[currentQuestionIndex];
+        questionEl.textContent = currentQuestion.question;
+        currentQuestion.options.forEach(option => {
+          const button = document.createElement('button');
+          button.textContent = option;
+          button.className = 'option';
+          button.onclick = () => checkAnswer(option);
+          optionsEl.appendChild(button);
+        });
+      } else {
+        // Oyun bitti
+        questionEl.style.display = "none";
+        optionsEl.style.display = "none";
+        feedbackEl.style.display = "none";
+        nextButton.style.display = "none";
+        scoreEl.style.display = "block";
+        scoreEl.textContent = `Oyun bitti! Puanın: ${score} / ${questions.length}`;
+      }
+    }
+
+    function checkAnswer(selected) {
+      const currentQuestion = questions[currentQuestionIndex];
+      const optionButtons = document.querySelectorAll('.option');
+      
+      optionButtons.forEach(button => button.disabled = true);
+
+      if (selected === currentQuestion.answer) {
+        score++;
+        feedbackEl.textContent = "Doğru! 🎉";
+      } else {
+        feedbackEl.textContent = `Yanlış! Doğru cevap: ${currentQuestion.answer}`;
+      }
+      nextButton.style.display = "inline-block";
+    }
+
+    nextButton.addEventListener('click', () => {
+      currentQuestionIndex++;
+      loadQuestion();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
