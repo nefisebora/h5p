@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korece Sayı Oyunu</title>
+
+  <!-- 8-bit font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: url('background.png') repeat;
+      background-size: cover;
+      font-family: 'Press Start 2P', cursive;
+      text-align: center;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: rgba(255, 240, 245, 0.9);
+      border-radius: 10px;
+      box-shadow: 6px 6px 0px black;
+    }
+
+    h1 {
+      color: #FFD700;
+      font-size: 20px;
+      text-shadow: 3px 3px black;
+    }
+
+    .question {
+      font-size: 16px;
+      margin: 20px 0;
+      color: black;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .option {
+      background: #FFB6C1;
+      color: black;
+      padding: 15px;
+      border: 3px solid #FF69B4;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 4px 4px 0px black;
+    }
+
+    .option:hover {
+      background: #FF69B4;
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .feedback {
+      margin-top: 20px;
+      font-size: 14px;
+      height: 30px;
+    }
+
+    .mode-button {
+      margin-top: 20px;
+      padding: 10px;
+      background: #FF4500;
+      border: 3px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 4px 4px 0px black;
+    }
+
+    .mode-button:hover {
+      background: #ff6347;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>KORECE SAYI OYUNU</h1>
+
+  <!-- Oyun Modu Seçme -->
+  <div class="container">
+    <h2>Mod Seç!</h2>
+    <button class="mode-button" onclick="startGame('easy')">🍙 Basitten Başla Kimbap Ye!</button>
+    <button class="mode-button" onclick="startGame('hard')">🌶️ Goçucang Ye!</button>
+  </div>
+
+  <!-- Oyun Alanı -->
+  <div class="container" id="game-container" style="display: none;">
+    <div id="game">
+      <div id="question-container">
+        <div class="question" id="question">Soru yükleniyor...</div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="mode-button" id="next-button" style="display: none;">Sonraki</button>
+    </div>
+  </div>
+
+  <!-- Mod Değiştirme Butonları -->
+  <button class="mode-button" onclick="switchMode('hard')" id="switch-hard" style="display: none;">🌶️ Ekstra Acı Ekle!</button>
+  <button class="mode-button" onclick="switchMode('easy')" id="switch-easy" style="display: none;">💧 Su Alabilir Miyim?</button>
+
+  <script>
+    const clickSound = new Audio('click.mp3');
+    let currentMode = 'easy';
+    let currentQuestionIndex = 0;
+    let questions = [];
+
+    const easyQuestions = [
+      { question: "Korece '일' hangi rakamdır?", options: ["1", "2", "3", "4"], answer: "1" },
+      { question: "Korece '이십' hangi rakamdır?", options: ["18", "19", "20", "21"], answer: "20" },
+      { question: "Korece '백' hangi rakamdır?", options: ["100", "200", "300", "400"], answer: "100" }
+    ];
+
+    const hardQuestions = [
+      { question: "Korece '십만오십육' hangi rakamdır?", options: ["100.056", "10.056", "105.006", "150.600"], answer: "100.056" },
+      { question: "Korece '이천삼백팔십사' hangi rakamdır?", options: ["2.384", "2.843", "2.834", "2.348"], answer: "2.384" },
+      { question: "Korece '일억이천삼백만' hangi rakamdır?", options: ["123.000.000", "1.230.000", "12.300.000", "1.230.000.000"], answer: "123.000.000" }
+    ];
+
+    function startGame(mode) {
+      clickSound.play();
+      currentMode = mode;
+      questions = mode === 'easy' ? easyQuestions : hardQuestions;
+      currentQuestionIndex = 0;
+      document.getElementById('game-container').style.display = 'block';
+      document.getElementById('switch-hard').style.display = mode === 'easy' ? 'inline-block' : 'none';
+      document.getElementById('switch-easy').style.display = mode === 'hard' ? 'inline-block' : 'none';
+      loadQuestion();
+    }
+
+    function switchMode(newMode) {
+      clickSound.play();
+      startGame(newMode);
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        document.getElementById('question').textContent = "Oyun bitti!";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('next-button').style.display = "none";
+        return;
+      }
+
+      const currentQuestion = questions[currentQuestionIndex];
+      document.getElementById('question').textContent = currentQuestion.question;
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = "";
+
+      currentQuestion.options.forEach(option => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.className = 'option';
+        button.onclick = () => checkAnswer(option);
+        optionsContainer.appendChild(button);
+      });
+
+      document.getElementById('next-button').style.display = "none";
+    }
+
+    function checkAnswer(selected) {
+      const currentQuestion = questions[currentQuestionIndex];
+
+      if (selected === currentQuestion.answer) {
+        document.getElementById('feedback').textContent = "Doğru! 🎉";
+      } else {
+        document.getElementById('feedback').textContent = `Yanlış! Doğru cevap: ${currentQuestion.answer}`;
+      }
+
+      document.getElementById('next-button').style.display = "inline-block";
+    }
+
+    document.getElementById('next-button').addEventListener('click', () => {
+      currentQuestionIndex++;
+      loadQuestion();
+    });
+
+  </script>
+</body>
+</html>
