@@ -1,0 +1,209 @@
+Tam olarak istediğin gibi **8-bit tarzı görünüme ve rastgele sıralanan cevaplara** sahip bir oyun oluşturabiliriz. Ayrıca **8-bit ses efektleri ve görsel bileşenler** de ekleyebiliriz.
+
+### **Neler Eklenecek?**
+✅ **8-bit görseller & fontlar:** Retro görünüm için **pixel-art font** ve arka plan ekleyeceğiz.  
+✅ **8-bit ses efektleri:** Doğru ve yanlış cevaplar için **piksel tarzı sesler** kullanacağız.  
+✅ **Rastgele sıralanan cevaplar:** Her girişte butonların yeri değişecek.  
+✅ **Oyun geliştirme:** Daha tatlı ve eğlenceli hale getireceğiz.
+
+---
+
+### **Geliştirilmiş Kod**
+Bu versiyonda:
+- **8-bit bir yazı fontu (Press Start 2P)** kullanıldı.
+- **Rastgele buton sıralama** eklendi.
+- **Ses efektleri** entegre edildi.
+- **8-bit piksel estetiği** için yeni stiller eklendi.
+
+Aşağıdaki kodu doğrudan **index.html** olarak kaydedebilirsin.
+
+---
+
+### **📜 Yeni Geliştirilmiş 8-Bit Korece Rakam Oyunu**
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8-Bit Korece Rakam Oyunu</title>
+  
+  <!-- 8-bit font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      background: url('https://i.imgur.com/NJkLz71.png') repeat; /* Piksel art arka plan */
+      font-family: 'Press Start 2P', cursive;
+      text-align: center;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 4px solid #FFD700;
+      border-radius: 15px;
+      box-shadow: 4px 4px 0px #000;
+    }
+
+    h1 {
+      color: #FFD700;
+      font-size: 20px;
+    }
+
+    .question {
+      font-size: 18px;
+      margin: 20px 0;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .option {
+      background: #FF4500;
+      color: white;
+      padding: 10px 20px;
+      border: 3px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 16px;
+      box-shadow: 4px 4px 0px black;
+    }
+
+    .option:hover {
+      transform: scale(1.1);
+      background: #ff6347;
+    }
+
+    .feedback {
+      margin-top: 20px;
+      font-size: 16px;
+      height: 30px;
+    }
+
+    .next-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #FFD700;
+      border: 3px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 4px 4px 0px black;
+    }
+
+    .next-button:hover {
+      background: #ffdb58;
+    }
+
+    .score {
+      font-size: 16px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>8-Bit Korece Rakam Oyunu</h1>
+    <div id="game">
+      <div id="question-container">
+        <div class="question" id="question">Soru yükleniyor...</div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-button" id="next-button" style="display: none;">Sonraki</button>
+      <div class="score" id="score" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    // 8-bit ses efektleri
+    const correctSound = new Audio('https://www.myinstants.com/media/sounds/coin.mp3'); // Doğru cevap sesi
+    const wrongSound = new Audio('https://www.myinstants.com/media/sounds/minecraft-hit.mp3'); // Yanlış cevap sesi
+
+    const questions = [
+      { question: "Korece '일' hangi rakamdır?", options: ["1", "2", "3", "4"], answer: "1" },
+      { question: "Korece '삼' hangi rakamdır?", options: ["2", "3", "5", "7"], answer: "3" },
+      { question: "Korece '오' hangi rakamdır?", options: ["4", "5", "6", "8"], answer: "5" },
+      { question: "Korece '칠' hangi rakamdır?", options: ["6", "7", "8", "9"], answer: "7" },
+      { question: "Korece '구' hangi rakamdır?", options: ["8", "9", "10", "11"], answer: "9" },
+      { question: "Korece '십' hangi rakamdır?", options: ["10", "12", "14", "16"], answer: "10" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const feedbackEl = document.getElementById('feedback');
+    const nextButton = document.getElementById('next-button');
+    const scoreEl = document.getElementById('score');
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function loadQuestion() {
+      feedbackEl.textContent = "";
+      nextButton.style.display = "none";
+      optionsEl.innerHTML = "";
+
+      if (currentQuestionIndex < questions.length) {
+        const currentQuestion = questions[currentQuestionIndex];
+        questionEl.textContent = currentQuestion.question;
+        let shuffledOptions = shuffleArray([...currentQuestion.options]);
+
+        shuffledOptions.forEach(option => {
+          const button = document.createElement('button');
+          button.textContent = option;
+          button.className = 'option';
+          button.onclick = () => checkAnswer(option);
+          optionsEl.appendChild(button);
+        });
+      } else {
+        questionEl.style.display = "none";
+        optionsEl.style.display = "none";
+        feedbackEl.style.display = "none";
+        nextButton.style.display = "none";
+        scoreEl.style.display = "block";
+        scoreEl.textContent = `Oyun bitti! Puanın: ${score} / ${questions.length}`;
+      }
+    }
+
+    function checkAnswer(selected) {
+      const currentQuestion = questions[currentQuestionIndex];
+      const optionButtons = document.querySelectorAll('.option');
+
+      optionButtons.forEach(button => button.disabled = true);
+
+      if (selected === currentQuestion.answer) {
+        score++;
+        feedbackEl.textContent = "Doğru! 🎉";
+        correctSound.play();
+      } else {
+        feedbackEl.textContent = `Yanlış! Doğru cevap: ${currentQuestion.answer}`;
+        wrongSound.play();
+      }
+      nextButton.style.display = "inline-block";
+    }
+
+    nextButton.addEventListener('click', () => {
+      currentQuestionIndex++;
+      loadQuestion();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
+```
